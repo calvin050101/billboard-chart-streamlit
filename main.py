@@ -57,8 +57,8 @@ def displayData(date_str):
     show_section("⛰️ Peakers (New Peak or Re-Peak)", peakers)
 
     # Gainers: +10 or more
-    gainers = df[df["Change"].str.startswith("+")].copy()
-    gainers["Change Int"] = gainers["Change"].str.extract(r"\+(\d+)").astype(float)
+    gainers = df[df["Change"].str.isdigit()].copy()
+    gainers["Change Int"] = gainers["Change"].str.astype(float)
     big_gainers = gainers[gainers["Change Int"] >= 10].drop(columns="Change Int")
     show_section("📈 Gainers (10+ Spots Up)", big_gainers)
 
