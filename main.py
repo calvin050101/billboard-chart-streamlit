@@ -51,21 +51,21 @@ def displayData(date_str):
 
     # Show Re-peaks and Peakers
     peakers = df.loc[
-        (df["Rank"] == df["Peak Position"]) &
-        (df["Change"].str.startswith(("+", "^"))), :
+        (df["Rank"] == df["Peak Position"]) & 
+        ~(df["Change"].isin(["=", "NEW"])), :
     ]
     show_section("⛰️ Peakers (New Peak or Re-Peak)", peakers)
 
     # Gainers: +10 or more
     gainers = df[df["Change"].str.isdigit()].copy()
-    gainers["Change Int"] = gainers["Change"].str.astype(float)
+    gainers["Change Int"] = gainers["Change"].astype(float)
     big_gainers = gainers[gainers["Change Int"] >= 10].drop(columns="Change Int")
     show_section("📈 Gainers (10+ Spots Up)", big_gainers)
 
     # Losers: -10 or more
     losers = df[df["Change"].str.startswith("-")].copy()
-    losers["Change Int"] = losers["Change"].astype(int).abs()
-    big_losers = losers[losers["Change Int"] >= 10].drop(columns="Change Int")
+    losers["Change Int"] = losers["Change"].astype(float)
+    big_losers = losers[losers["Change Int"] <= -10].drop(columns="Change Int")
     show_section("📉 Losers (10+ Spots Down)", big_losers)
 
     # Re-entries
