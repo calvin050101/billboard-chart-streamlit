@@ -22,8 +22,8 @@ def get_hot_100_chart_dataframe(date_str):
 
 def show_section(title, df):
     if not df.empty:
-        st.subheader(title)
-        st.dataframe(df.reset_index(drop=True), use_container_width=True)
+        with st.expander(f"# {title} ({len(df)})"):
+            st.dataframe(df.reset_index(drop=True), use_container_width=True)
 
 
 # --- Streamlit UI ---
