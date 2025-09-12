@@ -23,7 +23,7 @@ def get_hot_100_chart_dataframe(date_str):
 def show_section(title, df):
     if not df.empty:
         with st.expander(f"# {title} ({len(df)})"):
-            st.dataframe(df.reset_index(drop=True), use_container_width=True)
+            st.dataframe(df.reset_index(drop=True), width="stretch")
 
 
 # --- Streamlit UI ---
@@ -34,25 +34,17 @@ st.markdown("Enter a date to view the Billboard Hot 100 chart for that week.")
 
 selected_date = st.date_input("Select a date", value=TODAY, min_value=MIN_DATE, max_value=TODAY)
 
-def displayData(date_str):
+def displayData(df, df_last_week):
     global selected_date
-    last_week_date = selected_date - datetime.timedelta(days=7)
-    last_week_date_str = last_week_date.strftime("%Y-%m-%d")
-
-    df = get_hot_100_chart_dataframe(date_str)
-    df["Last Week"] = pd.to_numeric(df["Last Week"], errors="coerce")
-    df_last_week = get_hot_100_chart_dataframe(last_week_date_str)
-
+    
     # Find dropouts
     dropouts = df_last_week.loc[~df_last_week["Title"].isin(df["Title"]), ["Rank", "Title", "Artists"]]
 
-    st.success(f"Billboard Hot 100 for {date_str}")
     show_section("🏆 Top 100", df)
 
     # Show Re-peaks and Peakers
     peakers = df.loc[
-        (df["Rank"] == df["Peak Position"]) & 
-        ~(df["Change"].isin(["=", "NEW"])), :
+        (df["Rank"] == df["Peak Position"]) & ~(df["Change"].isin(["=", "NEW"])), :
     ]
     show_section("⛰️ Peakers (New Peak or Re-Peak)", peakers)
 
@@ -87,6 +79,12 @@ if st.button("Get Chart"):
     date_str = selected_date.strftime("%Y-%m-%d")
     with st.spinner(f"Fetching chart for {date_str}..."):
         try:
-            displayData(date_str)
+            df = get_hot_100_chart_dataframe(date_str)
+            df["Last Week"] = pd.to_numeric(df["Last Week"], errors="coerce")
+
+            last_week_date = selected_date - datetime.timedelta(days=7)
+            df_last_week = get_hot_100_chart_dataframe(last_week_date.strftime("%Y-%m-%d"))
+
+            displayData(df, df_last_week)
         except Exception as e:
             st.error(f"Error fetching chart: {e}")
