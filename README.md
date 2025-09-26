@@ -5,6 +5,7 @@ A Streamlit web app that lets you explore the Billboard Hot 100 chart for any we
 ## 🚀 Features
 
 - 📅 **Select a Date** — Choose any date from 1958-08-04 to today.
+- 📊 **Data Visualization** - View visual charts for chart insights.
 - 🏆 **Top 100 Chart** — View the full Billboard Hot 100 chart for that week.
 - ⛰️ **Peakers** — Songs that have hit a new peak or re-peaked that week.
 - 📈 **Gainers** — Songs that moved up by 10 or more positions.
