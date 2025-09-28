@@ -1,14 +1,13 @@
 import streamlit as st
-import pandas as pd
 import altair as alt
 
 from util.viz_util import (
-    CHANGE_COLOR_SCALE,
     LONGEVITY_ORDER,
-    categorize_change, 
-    categorize_longevity
+    get_peak_vs_weeks_data,
+    get_position_change_distribution_data,
+    get_top_10_line_chart_data,
+    get_week_distribution_data
 )
-
 
 # ==============================================================================
 # VISUALIZATION FUNCTIONS
@@ -22,39 +21,13 @@ def plot_top_10_line_chart(df, df_last_week):
     """
     st.subheader("Top 10 Rank Change (Previous Week vs. Current Week)")
 
-    # --- Data Preparation ---
-    top_10_titles = df[df['Rank'] <= 10]['Title'].tolist()
+    # --- Data Creation Call ---
+    rank_comparison_long, top_10_titles = get_top_10_line_chart_data(df, df_last_week)
+
     if not top_10_titles:
         st.info("No songs are currently in the Top 10.")
         return
 
-    current_week_data = (
-        df[df['Title'].isin(top_10_titles)]
-        [['Title', 'Artists', 'Rank', 'Change']]
-        .copy()
-    )
-    current_week_data.rename(columns={'Rank': 'Current Rank'}, inplace=True)
-    
-    last_week_data =(
-        df_last_week[df_last_week['Title'].isin(top_10_titles)]
-        [['Title', 'Artists', 'Rank']]
-        .copy()
-    )
-    last_week_data.rename(columns={'Rank': 'Previous Rank'}, inplace=True)
-    
-    comparison_data = current_week_data.merge(last_week_data, on=['Title', 'Artists'], how='left')
-    
-    # Convert to Long Format (stacking ranks)
-    rank_comparison_long = pd.melt(
-        comparison_data,
-        id_vars=['Title', 'Artists', 'Change'],
-        value_vars=['Previous Rank', 'Current Rank'],
-        var_name='Week Type',
-        value_name='Rank Value'
-    ).dropna(subset=['Rank Value'])
-    
-    rank_comparison_long['Song Details'] = rank_comparison_long['Title'] + ' - ' + rank_comparison_long['Artists']
-    
     # --- Scaling and Encoding ---
     data_max_rank = rank_comparison_long['Rank Value'].max()
     Y_DOMAIN_MAX = data_max_rank + 5
@@ -104,20 +77,13 @@ def plot_total_weeks_distribution(df):
     """
     st.subheader("Chart Longevity Distribution")
 
-    # --- Use the correct pythonic function to categorize data ---
-    plot_data = categorize_longevity(df.copy())
-    
-    # Grouping is fine, and 'observed=True' handles the categorical nature correctly
-    chart_data = plot_data.groupby('Longevity Category', observed=True).size().reset_index(name='Count')
-    
-    # --- Remove redundant categorical sorting. pd.cut and the Alt.X sort handle ordering. ---
+    chart_data = get_week_distribution_data(df)
     
     if chart_data.empty:
         st.info("No data available to generate the Longevity Distribution chart.")
         return
 
     bar_chart = alt.Chart(chart_data).mark_bar().encode(
-        # The x-axis sort is essential and remains correct
         x=alt.X('Longevity Category:N', sort=LONGEVITY_ORDER, 
                 title='Total Weeks Category', axis=alt.Axis(labelAngle=0)), 
         y=alt.Y('Count:Q', title='Number of Songs'),
@@ -145,12 +111,14 @@ def plot_peak_vs_weeks(df):
     Creates and displays a scatter plot of Peak Position vs. Total Weeks,
     with colors classified by position changes.
     """
+    CHANGE_COLOR_SCALE = alt.Scale(
+        domain=["Up", "Down", "Same", "Return", "New", "Unknown"],
+        range=["#2ca02c", "#d62728", "#1f77b4", "#ff7f0e", "#9467bd", "#8c8c8c"]
+    )
+    
     st.subheader("Peak Position vs. Total Weeks on Chart")
     
-    plot_data = df.copy()
-    plot_data['Change Category'] = plot_data['Change'].apply(categorize_change)
-
-    plot_data = plot_data.dropna(subset=['Total Weeks', 'Peak Position', 'Title', 'Change Category'])
+    plot_data = get_peak_vs_weeks_data(df)
     
     if plot_data.empty:
         st.info("No data available to generate the Peak Position vs. Total Weeks plot.")
@@ -178,9 +146,7 @@ def plot_position_change_histogram(df):
     """
     st.subheader("Distribution of Position Changes")
     
-    change_data = df[~df['Change'].isin(['NEW', 'RE', '='])].copy()
-    change_data['Position Change Value'] = pd.to_numeric(change_data['Change'], errors='coerce')
-    change_data = change_data.dropna(subset=['Position Change Value'])
+    change_data = get_position_change_distribution_data(df)
 
     if change_data.empty:
         st.info(
@@ -189,15 +155,21 @@ def plot_position_change_histogram(df):
         )
         return
     
+    BIN_SIZE = 5
+    
     hist_chart = alt.Chart(change_data).mark_bar().encode(
         x=alt.X(
             'Position Change Value:Q', 
-            bin=alt.Bin(step=10), 
+            bin=alt.Bin(step=BIN_SIZE), 
             title='Position Change (Spots)'
         ),
         y=alt.Y('count():Q', title='Number of Songs'),
         tooltip=[
-            alt.Tooltip('Position Change Value:Q', bin=True, title='Position Change Range'), 
+            alt.Tooltip(
+                'Position Change Value:Q', 
+                bin=alt.Bin(step=BIN_SIZE), 
+                title='Position Change Range'
+            ), 
             'count():Q'
         ],
         color=alt.value("teal")
