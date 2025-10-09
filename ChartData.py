@@ -1,11 +1,12 @@
 class ChartData:
     def __init__(
-            self, rank: int, title: str, artists: str, 
+            self, rank: int, title: str, artists: str, artistsList: list[str],
             last_week: int | None, peak_pos: int, total_weeks: int
         ):
         self.rank = rank
         self.title = title
         self.artists = artists
+        self.artistsList = artistsList
         self.peak_pos = peak_pos
         self.total_weeks = total_weeks
         self.last_week = last_week or None
@@ -22,6 +23,7 @@ class ChartData:
             "Rank": self.rank,
             "Title": self.title,
             "Artists": self.artists,
+            "Artists List": self.artistsList,
             "Change": self.change,
             "Last Week": self.last_week,
             "Peak Position": self.peak_pos,

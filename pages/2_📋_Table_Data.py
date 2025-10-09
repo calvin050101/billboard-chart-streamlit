@@ -18,23 +18,33 @@ def show_section(title, df):
         with st.expander(f"## {title} ({len(df)})"):
             display_df = prepare_dataframe_for_display(df)
             # Use use_container_width=True for better table display on wide screens
-            st.dataframe(display_df.reset_index(drop=True), use_container_width=True)
+            st.dataframe(display_df.reset_index(drop=True), use_container_width=True, 
+                         hide_index=True)
 
-
-def filter_and_show_categories(df, df_last_week):
-    """Groups filtering logic for chart categories (Gainers, Losers, New, etc.)."""
-
+def filter_and_show_categories(df: pd.DataFrame, df_last_week: pd.DataFrame):
+    df_norm = df.drop(columns="Artists List")
+    
     # --- TOP 100 ---
-    show_section("🏆 Top 100", df.dropna(subset=['Rank']))
+    show_section("🏆 Top 100", df_norm.dropna(subset=['Rank']))
 
     # --- PEAKERS ---
-    peakers = df.loc[
+    peakers = df_norm.loc[
         (df["Rank"] == df["Peak Position"]) & ~(df["Change"].isin(["=", "NEW"])), :
     ].dropna(subset=['Rank', 'Peak Position'])
     show_section("⛰️ Peakers (New Peak or Re-Peak)", peakers)
+    
+    # --- TOP ARTISTS ---
+    artist_count = (
+        df['Artists List'].explode().value_counts()
+        .reset_index()
+        .sort_values(['count', 'Artists List'], ascending=[False, True], ignore_index=True)
+        .rename(columns={'count': 'No. Songs', 'Artists List': 'Artist'})
+    )
+    show_section("🎤 Top Artists", artist_count[(artist_count['No. Songs'] > 1) & 
+                                               (artist_count['Artist'].str.len() > 1)])
 
     # --- GAINERS & LOSERS ---
-    change_data = df.copy()
+    change_data = df_norm.copy()
     change_data["Change Int"] = pd.to_numeric(change_data["Change"], errors="coerce")
 
     big_gainers = change_data[change_data["Change Int"] >= 10].drop(columns="Change Int")
@@ -44,11 +54,11 @@ def filter_and_show_categories(df, df_last_week):
     show_section("📉 Losers (10+ Spots Down)", big_losers)
 
     # --- RE-ENTRIES ---
-    re_entries = df[df["Change"] == "RE"].drop(columns=["Change", "Last Week"], errors='ignore')
+    re_entries = df_norm[df["Change"] == "RE"].drop(columns=["Change", "Last Week"], errors='ignore')
     show_section("🔁 Re-Entries This Week", re_entries)
 
     # --- NEW ENTRIES ---
-    new_entries = df[df["Change"] == "NEW"].drop(
+    new_entries = df_norm[df["Change"] == "NEW"].drop(
         columns=["Change", "Last Week", "Peak Position", "Total Weeks"], errors='ignore'
     )
     show_section("🆕 New Entries This Week", new_entries)

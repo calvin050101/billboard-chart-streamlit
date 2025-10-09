@@ -52,46 +52,6 @@ def categorize_longevity(df):
     return df
 
 # Helper functions to prepare data for visualizations
-
-def get_top_10_line_chart_data(df, df_last_week):
-    # 1. Identify current Top 10
-    top_10_titles = df[df['Rank'] <= 10]['Title'].tolist()
-    if not top_10_titles:
-        return pd.DataFrame(), [] # Return empty dataframes if no Top 10
-
-    # 2. Extract current week data for Top 10
-    current_week_data = (
-        df[df['Title'].isin(top_10_titles)]
-        [['Title', 'Artists', 'Rank', 'Change']]
-        .copy()
-    )
-    current_week_data.rename(columns={'Rank': 'Current Rank'}, inplace=True)
-
-    # 3. Extract last week data for Top 10 songs
-    last_week_data = (
-        df_last_week[df_last_week['Title'].isin(top_10_titles)]
-        [['Title', 'Artists', 'Rank']]
-        .copy()
-    )
-    last_week_data.rename(columns={'Rank': 'Previous Rank'}, inplace=True)
-
-    # 4. Merge the data
-    comparison_data = current_week_data.merge(last_week_data, on=['Title', 'Artists'], how='left')
-
-    # 5. Convert to Long Format (stacking ranks)
-    rank_comparison_long = pd.melt(
-        comparison_data,
-        id_vars=['Title', 'Artists', 'Change'],
-        value_vars=['Previous Rank', 'Current Rank'],
-        var_name='Week Type',
-        value_name='Rank Value'
-    ).dropna(subset=['Rank Value'])
-
-    # 6. Create combined song details column
-    rank_comparison_long['Song Details'] = rank_comparison_long['Title'] + ' - ' + rank_comparison_long['Artists']
-
-    return rank_comparison_long, top_10_titles
-
 def get_week_distribution_data(df):
     plot_data = categorize_longevity(df.copy())
     
