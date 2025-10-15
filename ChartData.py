@@ -18,7 +18,7 @@ class ChartData:
             pos_change = self.last_week - self.rank
             self.change = "=" if pos_change == 0 else str(pos_change)
     
-    def get_dict(self):
+    def get_dict(self) -> dict[str, any]:
         return {
             "Rank": self.rank,
             "Title": self.title,

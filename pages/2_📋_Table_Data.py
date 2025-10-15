@@ -6,18 +6,17 @@ st.set_page_config(page_title="Table Data")
 # Helper functions (copied/adapted from main.py)
 NUMERIC_COLS = ["Rank", "Peak Position", "Total Weeks", "Last Week"]
 
-def prepare_dataframe_for_display(df):
+def prepare_dataframe_for_display(df: pd.DataFrame) -> pd.DataFrame:
     display_df = df.copy()
     for col in NUMERIC_COLS:
         if col in display_df.columns:
             display_df[col] = display_df[col].astype("Int64", errors='ignore')
     return display_df
 
-def show_section(title, df):
+def show_section(title: str, df: pd.DataFrame) -> pd.DataFrame:
     if not df.empty:
         with st.expander(f"## {title} ({len(df)})"):
             display_df = prepare_dataframe_for_display(df)
-            # Use use_container_width=True for better table display on wide screens
             st.dataframe(display_df.reset_index(drop=True), use_container_width=True, 
                          hide_index=True)
 

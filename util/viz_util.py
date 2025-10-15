@@ -4,7 +4,7 @@ import pandas as pd
 LONGEVITY_ORDER = ['1-5 Weeks', '6-15 Weeks', '16-30 Weeks', '31-45 Weeks', 
                    '46-60 Weeks', '61+ Weeks']
 
-def categorize_change(change_str):
+def categorize_change(change_str: str):
     """Categorizes the 'Change' string into 'Up', 'Down', 'Same', 'Return', 'New'."""
     if pd.isna(change_str):
         return "Unknown"
@@ -32,7 +32,7 @@ def categorize_change(change_str):
     else:
         return "Unknown"
     
-def categorize_longevity(df):
+def categorize_longevity(df: pd.DataFrame):
     """
     Categorizes songs based on their total weeks on the chart using pd.cut for 
     a more pythonic and efficient approach.
@@ -52,7 +52,7 @@ def categorize_longevity(df):
     return df
 
 # Helper functions to prepare data for visualizations
-def get_week_distribution_data(df):
+def get_week_distribution_data(df: pd.DataFrame):
     plot_data = categorize_longevity(df.copy())
     
     return (
@@ -61,13 +61,13 @@ def get_week_distribution_data(df):
         .reset_index(name='Count')
     )
 
-def get_peak_vs_weeks_data(df):
+def get_peak_vs_weeks_data(df: pd.DataFrame):
     plot_data = df.copy()
     plot_data['Change Category'] = plot_data['Change'].apply(categorize_change)
 
     return plot_data.dropna(subset=['Total Weeks', 'Peak Position', 'Title', 'Change Category'])
 
-def get_position_change_distribution_data(df):
+def get_position_change_distribution_data(df: pd.DataFrame):
     change_data = df[~df['Change'].isin(['NEW', 'RE', '='])].copy()
     change_data['Position Change Value'] = pd.to_numeric(change_data['Change'], errors='coerce')
     return change_data.dropna(subset=['Position Change Value']).copy()

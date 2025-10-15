@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from bs4.element import ResultSet
 import requests
 
-def get_artistsList(artistsSpan):
+def get_artistsList(artistsSpan) -> list[str]:
     raw_segments: list[str] = [t.strip() for t in artistsSpan.stripped_strings if t.strip()]
     
     if len(raw_segments) <= 1:
@@ -14,7 +14,7 @@ def get_artistsList(artistsSpan):
         else:
             return [s.strip() for s in raw_segments[0].split("Featuring")]
     
-    def split_artist_segment(text):
+    def split_artist_segment(text) -> list[str]:
         parts = []
         
         # Split on 'Featuring' or 'ft.' (only if followed by something)
@@ -54,9 +54,9 @@ def get_artistsList(artistsSpan):
 
 def __get_chart_info(rank: int, chart_result: ResultSet) -> ChartData:
     title = chart_result.find("h3", id="title-of-a-story").text.strip()
+    
     artistsSpan = chart_result.find("span", class_="a-no-trucate")
     artistsText = artistsSpan.text.strip().replace("Featuring", "ft.")
-    
     artistsList = get_artistsList(artistsSpan)
 
     song_stats = chart_result.find_all("span", class_="u-font-size-12")
@@ -71,8 +71,8 @@ def __get_chart_info(rank: int, chart_result: ResultSet) -> ChartData:
 
 def get_chart_data(chart_str: str) -> List[dict[str, any]]:
     SITE_URL: str = f'https://www.billboard.com/charts/hot-100/{chart_str}'
-    response: requests.Response = requests.get(SITE_URL)
-    soup: BeautifulSoup = BeautifulSoup(response.content, 'html.parser')
+    response = requests.get(SITE_URL)
+    soup = BeautifulSoup(response.content, 'html.parser')
 
     chart_results: ResultSet = soup.find_all('div', class_='o-chart-results-list-row-container')
     chart_entries = [
