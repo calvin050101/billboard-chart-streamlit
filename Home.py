@@ -34,10 +34,10 @@ def get_effective_chart_date(selected_date: date) -> str:
     input_saturday = datetime.strptime(get_saturday_of_week(selected_date), "%Y-%m-%d")
     current_saturday = datetime.strptime(get_saturday_of_week(TODAY), "%Y-%m-%d")
 
-    return TODAY.strftime("%Y-%m-%d") if input_saturday == current_saturday else input_saturday.strftime("%Y-%m-%d")
+    return selected_date if input_saturday == current_saturday else input_saturday.strftime("%Y-%m-%d")
 
 
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=600)
 def get_hot_100_chart_dataframe(date_str: str) -> pd.DataFrame:
     """
     Returns a pandas DataFrame of the Billboard Hot 100 chart for a given date.
