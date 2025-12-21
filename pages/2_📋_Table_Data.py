@@ -34,10 +34,20 @@ def filter_and_show_categories(df: pd.DataFrame, df_last_week: pd.DataFrame):
     
     # --- TOP ARTISTS ---
     artist_count = (
-        df['Artists List'].explode().value_counts()
+        df.explode('Artists List')
+        .groupby('Artists List')
+        .agg(
+            No_Songs=('Rank', 'count'),
+            Best_Rank=('Rank', 'min'),           # Highest chart position
+            Median_Rank=('Rank', 'median'),
+        )
         .reset_index()
-        .sort_values(['count', 'Artists List'], ascending=[False, True], ignore_index=True)
-        .rename(columns={'count': 'No. Songs', 'Artists List': 'Artist'})
+        .rename(columns={
+            'Artists List': 'Artist', 'No_Songs': 'No. Songs', 
+            'Median_Rank': 'Median Rank', 'Best_Rank': 'Best Rank'
+        })
+        .sort_values(['No. Songs', 'Best Rank', 'Median Rank'], 
+                   ascending=[False, True, True])
     )
     show_section("🎤 Top Artists", artist_count[(artist_count['No. Songs'] > 1) & 
                                                (artist_count['Artist'].str.len() > 1)])
@@ -63,7 +73,8 @@ def filter_and_show_categories(df: pd.DataFrame, df_last_week: pd.DataFrame):
     show_section("🆕 New Entries This Week", new_entries)
 
     # --- DROPOUTS ---
-    dropouts = df_last_week[~df_last_week["Title"].isin(df["Title"])][["Rank", "Title", "Artists"]]
+    dropouts = df_last_week[~df_last_week["Title"].isin(df["Title"])]\
+        [["Rank", "Title", "Artists", "Peak Position", "Total Weeks"]]
     show_section("🚪 Dropouts (Songs that left the chart)", dropouts.dropna(subset=['Rank']))
 
 
