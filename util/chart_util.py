@@ -47,8 +47,10 @@ def get_artistsList(artistsSpan) -> list[str]:
     for seg in raw_segments:
         artistsList.extend(split_artist_segment(seg))
         
+    restricted_set = set(",", "x", "With")
+        
     artistsList: list[str] = [a.replace(",", "").strip() for a in artistsList 
-                              if a and a.strip() != "," and a.strip() != "x"]
+                              if a and a.strip() not in restricted_set]
     
     return artistsList
 
