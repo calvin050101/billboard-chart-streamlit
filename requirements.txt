@@ -2,3 +2,4 @@ pandas
 streamlit
 beautifulsoup4
 requests
+altair
