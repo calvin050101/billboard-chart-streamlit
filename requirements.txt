@@ -2,4 +2,3 @@ pandas
 streamlit>=1.52.0
 beautifulsoup4
 requests
-altair==4.0
