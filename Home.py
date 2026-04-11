@@ -7,7 +7,7 @@ from util.chart_util import get_chart_data
 # 1. CONSTANTS
 # ==============================================================================
 
-MIN_DATE = date(1958, 8, 4)
+MIN_DATE = date(1958, 8, 1)
 TODAY = date.today()
 NUMERIC_COLS = ["Rank", "Peak Position", "Total Weeks", "Last Week"]
 

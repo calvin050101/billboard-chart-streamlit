@@ -14,13 +14,14 @@ A Streamlit web app that lets you explore the Billboard Hot 100 chart for any we
 - 🔁 **Re-entries** — Songs that re-entered the chart.
 - 🆕 **New Entries** — Brand new songs on the chart.
 - 🚪 **Dropouts** — Songs that were on the chart last week but are gone this week.
+- 📩 **Excel Download** — Download the chart report as an Excel file.
 
 ## 📦 Dependencies
 
 Make sure to install the required libraries before running the app:
 
 ```bash
-pip install streamlit pandas billboard.py
+pip install -r requirements.txt
 ```
 
 ## ⚠️ Disclaimer
